@@ -406,21 +406,6 @@
     }
   }
 
-  async function reportAndLeave() {
-    const ok = await confirmDialog({
-      icon: 'flag',
-      title: 'Report and leave?',
-      body: "We keep no records, so there's nothing for us to review. Reporting closes this room to anyone new, and you leave right away. If you need evidence, take your own screenshots first. If you're in danger, contact local authorities.",
-      confirm: 'Report and leave', danger: true,
-    });
-    if (!ok) return;
-    S.leaving = true;
-    send({ t: 'report' });
-    if (S.count <= 1) await dissolve();
-    wipe();
-    endRoom('reported');
-  }
-
   function wipe() {
     closeSocket();
     Object.assign(S, { code: '', roomId: '', codeSecret: null, me: '', token: '', peers: new Map(), items: [],
@@ -442,7 +427,6 @@
   const ENDINGS = {
     gone: ["The fire's out", 'This room no longer exists. The messages, the code, the fact it was ever here: all gone. Nothing was kept, anywhere.'],
     left: ['You left the room', "Your copy of the conversation is gone. The room stays alive with the person still inside, until they leave too."],
-    reported: ["You've left", 'This room is now closed to anyone new. Your copy of the conversation is gone.'],
     lost: ['Connection lost', "We couldn't reconnect in time. If you were the last one here, the room is gone."],
     displaced: ['Your seat was taken', 'Someone else is in the room now, or it was locked while you were away.'],
   };
@@ -677,7 +661,6 @@
   $('code-chip').addEventListener('click', copyCode);
   $('share-copy').addEventListener('click', copyCode);
   $('copy-item').addEventListener('click', copyCode);
-  $('report-item').addEventListener('click', reportAndLeave);
   $('home-btn').addEventListener('click', () => show('home'));
   $('lock-toggle').addEventListener('change', (e) => send({ t: 'lock', value: e.target.checked }));
   $('history-toggle').addEventListener('change', (e) => send({ t: 'history', value: e.target.checked }));

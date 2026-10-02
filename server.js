@@ -29,7 +29,7 @@ const TRUST_PROXY = process.env.TRUST_PROXY === '1';
 const REPO_URL = process.env.REPO_URL || '';
 const PUBLIC_DIR = path.join(__dirname, 'public');
 
-/** roomId -> { peers: Map<peerId, ws>, tokens: Map<token, peerId>, size, locked, history, reportedClosed, graceTimer } */
+/** roomId -> { peers: Map<peerId, ws>, tokens: Map<token, peerId>, size, locked, history, graceTimer } */
 const rooms = new Map();
 
 // The one number the site keeps. Resets at midnight UTC.
@@ -117,7 +117,7 @@ function handle(ws, msg) {
       if (rooms.has(msg.room)) return send(ws, { t: 'error', code: 'exists' });
       const size = Number.isInteger(msg.size) && msg.size >= 2 && msg.size <= MAX_ROOM_SIZE ? msg.size : 2;
       const room = { id: msg.room, peers: new Map(), tokens: new Map(), size, locked: false,
-        history: msg.history !== false, reportedClosed: false, graceTimer: null };
+        history: msg.history !== false, graceTimer: null };
       rooms.set(room.id, room);
       return addPeer(room, ws, newId(), false);
     }
@@ -134,7 +134,7 @@ function handle(ws, msg) {
       }
       if (tokenPeer && room.peers.has(tokenPeer)) return send(ws, { t: 'error', code: 'full' });
       if (room.peers.size >= room.size) return send(ws, { t: 'error', code: 'full' });
-      if (!tokenPeer && (room.locked || room.reportedClosed)) return send(ws, { t: 'error', code: 'locked' });
+      if (!tokenPeer && room.locked) return send(ws, { t: 'error', code: 'locked' });
       return addPeer(room, ws, tokenPeer || newId(), Boolean(tokenPeer));
     }
     case 'relay': {
@@ -154,12 +154,6 @@ function handle(ws, msg) {
       if (!ws.room) return;
       ws.room.history = Boolean(msg.value);
       return broadcastState(ws.room);
-    }
-    case 'report': {
-      // We have nothing to review. The only thing we can do is stop new people
-      // from entering this room with its code.
-      if (ws.room) ws.room.reportedClosed = true;
-      return removePeer(ws, true);
     }
     case 'leave':
       return removePeer(ws, true);

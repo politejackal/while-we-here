@@ -61,7 +61,6 @@ Encrypted traffic always goes through the server's relay. Browsers never connect
 - **Codes.** 8 characters from a 31-character alphabet with no look-alikes (no 0/O, 1/I/L): about 850 billion combinations. Each client gets 8 wrong guesses per 10 minutes. Guess counters are keyed by a salted hash of the address; the salt is random, lives in memory only, and rotates every window.
 - **Lock.** Anyone in the room can lock it. Nobody new can take an open seat, even with the code.
 - **Refresh grace.** If the last person refreshes, the room is held for 10 seconds for that same tab only (via a random rejoin token). While the page reloads, the conversation is parked in `sessionStorage` and deleted the instant the page comes back. Closing the tab discards it. Leaving on purpose destroys the room immediately.
-- **Report and leave.** There are no records to review, so a report closes the room to anyone new and takes you out.
 - **No timestamps.** Only "just now" and "earlier". No typing indicators, no read receipts.
 - **One number.** The homepage counter of rooms that vanished today (resets at midnight UTC) is the only thing the server counts.
 - **No third parties.** Fonts (Google Sans, Material Symbols) are self-hosted, so loading the page doesn't contact Google or anyone else. The Content-Security-Policy only allows this origin.
@@ -71,7 +70,7 @@ Encrypted traffic always goes through the server's relay. Browsers never connect
 - **Screenshots.** The promise is "this site keeps no record," not "nobody can ever keep anything."
 - **A malicious server could serve different JavaScript.** Open source lets people audit the code; it doesn't prove what a given server runs. Self-hosting is the strongest guarantee.
 - **Anyone with the code is in.** The code is the key. Share it the way you'd share a key.
-- **Abuse.** With zero records, reports can't be investigated.
+- **Abuse.** With zero records, there's nothing to investigate. Rooms need a code, and any room can be locked.
 - **Local law.** Anonymous messaging is regulated in many places, including Saudi Arabia. Check before launching publicly.
 
 ## Files
