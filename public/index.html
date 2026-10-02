@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="referrer" content="no-referrer">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' https://while-we-here.onrender.com wss://while-we-here.onrender.com; img-src 'self' data:; base-uri 'none'; form-action 'none'">
+  <meta name="description" content="A chat room that only exists while someone is in it. No accounts, no names, no logs.">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#131314" media="(prefers-color-scheme: dark)">
+  <title>While We Here</title>
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+  <script src="config.js" defer></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+
+<!-- ===================== HOME ===================== -->
+<div id="home" class="view">
+  <header class="top-app-bar">
+    <div class="brand">
+      <span class="brand-mark"><span class="icon filled">local_fire_department</span></span>
+      <span class="brand-name">While We Here</span>
+    </div>
+    <a class="text-button" href="#how">How it works</a>
+  </header>
+
+  <main class="home-main">
+    <section class="hero">
+      <h1 class="display">A room that only exists<br>while you're in it.</h1>
+      <p class="hero-sub">Start a room, share the code, talk. When the last person leaves, everything is gone: the messages, the code, and any sign the room existed.</p>
+      <ul class="trust-chips" aria-label="Privacy at a glance">
+        <li><span class="icon small">no_accounts</span>No accounts, no names</li>
+        <li><span class="icon small">public_off</span>IP hidden from the room</li>
+        <li><span class="icon small">lock</span>End-to-end encrypted</li>
+        <li><span class="icon small">visibility_off</span>No logs</li>
+      </ul>
+
+      <div class="hero-actions">
+        <div class="card create-card">
+          <div class="card-head">
+            <span class="icon-circle primary"><span class="icon">add</span></span>
+            <div>
+              <h2 class="title-large">Start a new room</h2>
+              <p class="body-medium muted">You'll get a code to share.</p>
+            </div>
+          </div>
+          <fieldset class="size-picker">
+            <legend>
+              <span class="label-large">People in the room</span>
+              <span class="body-small muted">Including you. Set once, when the room starts.</span>
+            </legend>
+            <div class="segmented" role="radiogroup" aria-label="People in the room">
+              <label><input type="radio" name="size" value="2" checked><span><span class="icon small">check</span>2</span></label>
+              <label><input type="radio" name="size" value="3"><span><span class="icon small">check</span>3</span></label>
+              <label><input type="radio" name="size" value="4"><span><span class="icon small">check</span>4</span></label>
+              <label><input type="radio" name="size" value="5"><span><span class="icon small">check</span>5</span></label>
+              <label><input type="radio" name="size" value="6"><span><span class="icon small">check</span>6</span></label>
+              <label class="seg-custom"><input type="radio" name="size" value="custom" id="size-custom"><span><span class="icon small">check</span>Custom</span></label>
+            </div>
+            <div class="text-field number-field" id="custom-size-field" hidden>
+              <input id="custom-size" type="number" inputmode="numeric" min="2" max="50" step="1" placeholder=" " aria-describedby="custom-size-support">
+              <label for="custom-size">Number of people</label>
+              <div class="supporting" id="custom-size-support">From 2 to 50, including you</div>
+            </div>
+          </fieldset>
+          <label class="switch-row" id="history-row" hidden>
+            <span>
+              <span class="label-large">Share history with people who join later</span>
+              <span class="body-small muted">Turn off for a fresh start each time someone new enters.</span>
+            </span>
+            <input type="checkbox" class="switch" id="create-history" checked>
+          </label>
+          <button class="filled-button wide" id="create-btn">
+            <span class="icon">local_fire_department</span>
+            <span>New room</span>
+          </button>
+        </div>
+
+        <form class="card join-card" id="join-form" autocomplete="off">
+          <div class="card-head">
+            <span class="icon-circle secondary"><span class="icon">forum</span></span>
+            <div>
+              <h2 class="title-large">Have a code?</h2>
+              <p class="body-medium muted">Rooms hold as many people as their creator chose.</p>
+            </div>
+          </div>
+          <div class="text-field" id="code-field">
+            <input id="code-input" inputmode="text" autocapitalize="characters" spellcheck="false"
+                   maxlength="11" placeholder=" " aria-describedby="code-support">
+            <label for="code-input">Room code</label>
+            <div class="supporting" id="code-support">Like KX7M-42QA</div>
+          </div>
+          <button class="tonal-button wide" id="join-btn" type="submit">
+            <span>Join room</span>
+            <span class="icon">arrow_forward</span>
+          </button>
+        </form>
+      </div>
+    </section>
+
+    <section class="section anon" id="anonymous">
+      <span class="eyebrow"><span class="icon small filled">shield</span>Privacy</span>
+      <h2 class="headline">Anonymous by design</h2>
+      <p class="section-sub">Not a setting you turn on. It's how the whole thing is built. There's nothing to sign up for and nothing that points back to you.</p>
+      <div class="anon-grid">
+        <div class="anon-card">
+          <span class="icon-circle primary"><span class="icon">no_accounts</span></span>
+          <h3 class="title-medium">Nobody knows who you are</h3>
+          <p class="body-medium muted">No sign-up, phone number, email or name. No cookies, analytics or trackers. In the room you're just "Someone", and a brand-new someone every visit.</p>
+        </div>
+        <div class="anon-card">
+          <span class="icon-circle tertiary"><span class="icon">public_off</span></span>
+          <h3 class="title-medium">Your IP is hidden from the room</h3>
+          <p class="body-medium muted">Everything travels through our relay. Nobody in the room ever connects to your device, so nobody in the room can see your IP address or where you are.</p>
+        </div>
+        <div class="anon-card">
+          <span class="icon-circle secondary"><span class="icon">lock</span></span>
+          <h3 class="title-medium">Only the room can read it</h3>
+          <p class="body-medium muted">Messages are end-to-end encrypted with a key made from the room code, which never leaves your device. Our relay carries scrambled data it can't open.</p>
+        </div>
+        <div class="anon-card">
+          <span class="icon-circle primary"><span class="icon">straighten</span></span>
+          <h3 class="title-medium">Even message length is hidden</h3>
+          <p class="body-medium muted">Before encryption, every message is padded to a standard size. To the relay, "ok" and a long paragraph look exactly the same.</p>
+        </div>
+        <div class="anon-card">
+          <span class="icon-circle tertiary"><span class="icon">visibility_off</span></span>
+          <h3 class="title-medium">No logs in our code</h3>
+          <p class="body-medium muted">Our relay keeps no IP logs, message logs or access logs, and writes nothing to disk. It sees your IP only while you're connected, because that's how it sends data back to you. The companies hosting this site (GitHub and Render) may keep their own standard connection logs. Tor gets around that.</p>
+        </div>
+        <div class="anon-card highlight">
+          <span class="icon-circle on-primary"><span class="icon">vpn_lock</span></span>
+          <h3 class="title-medium">Hide your IP from us too</h3>
+          <p class="body-medium">Open While We Here in Tor Browser. It works there because we never use direct browser-to-browser connections (WebRTC), which Tor blocks. Then not even our server knows where you are.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="counter" aria-live="polite">
+      <span class="counter-number" id="counter-number">—</span>
+      <span class="counter-text" id="counter-text">rooms have existed and vanished today.</span>
+      <span class="body-small muted">It's the only number this site keeps.</span>
+    </section>
+
+    <section class="section" id="how">
+      <h2 class="headline">Like a campfire</h2>
+      <p class="section-sub">It keeps burning as long as someone is sitting by it. When the last person walks away, it goes out.</p>
+      <ol class="steps">
+        <li class="step"><span class="step-num">1</span><h3 class="title-medium">Start a room</h3><p class="body-medium muted">Pick a room size and press New room. You're the only one inside, holding a short code.</p></li>
+        <li class="step"><span class="step-num">2</span><h3 class="title-medium">Share the code</h3><p class="body-medium muted">In person, by text, on paper. However you like. We never see it.</p></li>
+        <li class="step"><span class="step-num">3</span><h3 class="title-medium">Come and go</h3><p class="body-medium muted">While one person stays, the chat stays. Open seats can be filled by anyone with the code.</p></li>
+        <li class="step"><span class="step-num">4</span><h3 class="title-medium">The fire goes out</h3><p class="body-medium muted">The last person leaves, and the room is gone forever. Nobody can recover it, including us.</p></li>
+      </ol>
+    </section>
+
+    <section class="section">
+      <h2 class="headline">Where the chat lives</h2>
+      <p class="section-sub">Not on our server. Only in the browsers of the people in the room. When the last browser closes, the only copy closes with it.</p>
+      <div class="facts">
+        <div class="fact card outlined">
+          <span class="icon-circle tertiary"><span class="icon">dns</span></span>
+          <h3 class="title-medium">What our server knows</h3>
+          <ul class="body-medium muted">
+            <li>That a room is active right now, by a scrambled ID. Not the code itself.</li>
+            <li>How many people are inside, and how many the room can hold.</li>
+          </ul>
+        </div>
+        <div class="fact card outlined">
+          <span class="icon-circle primary"><span class="icon">visibility_off</span></span>
+          <h3 class="title-medium">What it never sees</h3>
+          <ul class="body-medium muted">
+            <li>Your messages. They're end-to-end encrypted with a key only the code can unlock.</li>
+            <li>Your IP address, as far as the other person is concerned. Traffic is relayed, never direct.</li>
+          </ul>
+        </div>
+        <div class="fact card outlined">
+          <span class="icon-circle secondary"><span class="icon">shield</span></span>
+          <h3 class="title-medium">What it forgets</h3>
+          <ul class="body-medium muted">
+            <li>The room, the instant it empties.</li>
+            <li>No accounts, no names, no logs. The code is open source so anyone can check.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2 class="headline">Honest limits</h2>
+      <div class="limits">
+        <div class="limit"><span class="icon">photo_camera</span><div><h3 class="title-small">Screenshots</h3><p class="body-medium muted">This site keeps no record. That's the promise. It can't stop someone from photographing their screen.</p></div></div>
+        <div class="limit"><span class="icon">flag</span><div><h3 class="title-small">Abuse</h3><p class="body-medium muted">With zero records, we can't investigate reports. Rooms need a code, so strangers can't wander in. Report and leave closes a room to new people.</p></div></div>
+        <div class="limit"><span class="icon">dns</span><div><h3 class="title-small">Who you were with</h3><p class="body-medium muted">Without Tor, whoever runs the relay could see which connections shared a room and when. Never what was said. Tor Browser hides this too.</p></div></div>
+        <div class="limit"><span class="icon">code</span><div><h3 class="title-small">Not yet audited</h3><p class="body-medium muted">The encryption uses standard, well-studied building blocks, and every line is public. It hasn't had an independent security audit yet.</p></div></div>
+        <div class="limit"><span class="icon">gavel</span><div><h3 class="title-small">Local law</h3><p class="body-medium muted">Anonymous messaging is regulated in some places. Know the rules where you are.</p></div></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <span>While We Here</span>
+    <span class="dot">·</span>
+    <span>No cookies, no analytics, no logs in our code</span>
+    <a id="repo-link" class="footer-link" hidden target="_blank" rel="noopener noreferrer"><span class="icon">code</span>Source code</a>
+  </footer>
+</div>
+
+<!-- ===================== ROOM ===================== -->
+<div id="room" class="view" hidden>
+  <header class="top-app-bar room-bar">
+    <button class="icon-button" id="leave-btn" aria-label="Leave room" title="Leave room"><span class="icon">arrow_back</span></button>
+    <div class="room-title">
+      <button class="code-chip" id="code-chip" title="Copy code">
+        <span id="room-code">----</span><span class="icon small">content_copy</span>
+      </button>
+      <span class="status" id="status"><span class="status-dot"></span><span id="status-text">Just you</span></span>
+    </div>
+    <span class="lock-badge" id="lock-badge" hidden title="Room locked"><span class="icon small filled">lock</span></span>
+    <div class="menu-anchor">
+      <button class="icon-button" id="menu-btn" aria-label="Room options" aria-haspopup="menu" aria-expanded="false"><span class="icon">more_vert</span></button>
+      <div class="menu" id="menu" role="menu" hidden>
+        <label class="menu-item" role="menuitemcheckbox">
+          <span class="icon">lock</span>
+          <span class="menu-text"><span>Lock room</span><span class="menu-sub">Nobody new can take a seat</span></span>
+          <input type="checkbox" class="switch" id="lock-toggle">
+        </label>
+        <label class="menu-item" role="menuitemcheckbox" id="history-item">
+          <span class="icon">history</span>
+          <span class="menu-text"><span>Share history</span><span class="menu-sub">New joiners see earlier messages</span></span>
+          <input type="checkbox" class="switch" id="history-toggle">
+        </label>
+        <div class="menu-divider"></div>
+        <button class="menu-item" role="menuitem" id="copy-item"><span class="icon">content_copy</span><span class="menu-text"><span>Copy code</span></span></button>
+        <button class="menu-item danger" role="menuitem" id="report-item"><span class="icon">flag</span><span class="menu-text"><span>Report and leave</span></span></button>
+      </div>
+    </div>
+  </header>
+
+  <div class="banner" id="last-banner" hidden>
+    <span class="icon">local_fire_department</span>
+    <span>You're the last one here. If you leave, this conversation is gone forever.</span>
+  </div>
+
+  <main class="chat" id="chat">
+    <div class="share-card" id="share-card">
+      <span class="icon-circle primary big"><span class="icon filled">local_fire_department</span></span>
+      <h2 class="headline-small">The fire's lit</h2>
+      <p class="body-medium muted" id="share-text">Share this code with one other person. Say it out loud, text it, write it down.</p>
+      <div class="big-code" id="big-code">----</div>
+      <button class="tonal-button" id="share-copy"><span class="icon">content_copy</span><span>Copy code</span></button>
+      <div class="share-notes">
+        <p class="body-small muted share-note"><span class="icon small">public_off</span>You're anonymous here. Nobody who joins can see your IP or who you are.</p>
+        <p class="body-small muted share-note"><span class="icon small">info</span>We don't have this code. Only a scrambled version of it.</p>
+      </div>
+    </div>
+    <ol class="messages" id="messages" aria-live="polite"></ol>
+  </main>
+
+  <form class="composer" id="composer" autocomplete="off">
+    <div class="composer-field">
+      <textarea id="message-input" rows="1" maxlength="4000" placeholder="Message" aria-label="Message"></textarea>
+    </div>
+    <button class="send-button" id="send-btn" type="submit" aria-label="Send" disabled><span class="icon filled">send</span></button>
+  </form>
+</div>
+
+<!-- ===================== ENDED ===================== -->
+<div id="ended" class="view" hidden>
+  <main class="ended">
+    <div class="ember"><span class="icon">local_fire_department</span></div>
+    <h1 class="headline" id="ended-title">The fire's out</h1>
+    <p class="body-large muted" id="ended-text">This room no longer exists. The messages, the code, the fact it was ever here: all gone. Nothing was kept, anywhere.</p>
+    <button class="filled-button" id="home-btn"><span>Back home</span></button>
+  </main>
+</div>
+
+<!-- ===================== DIALOG + SNACKBAR ===================== -->
+<div class="scrim" id="scrim" hidden></div>
+<div class="dialog" id="dialog" role="alertdialog" aria-modal="true" aria-labelledby="dialog-title" aria-describedby="dialog-body" hidden>
+  <span class="icon dialog-icon" id="dialog-icon">local_fire_department</span>
+  <h2 class="headline-small" id="dialog-title"></h2>
+  <p class="body-medium muted" id="dialog-body"></p>
+  <div class="dialog-actions">
+    <button class="text-button" id="dialog-cancel">Stay</button>
+    <button class="text-button" id="dialog-confirm">Leave</button>
+  </div>
+</div>
+<div class="snackbar" id="snackbar" role="status" hidden></div>
+
+</body>
+</html>

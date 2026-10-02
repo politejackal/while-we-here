@@ -1,0 +1,16 @@
+# One-click relay on Render: Dashboard -> New -> Blueprint -> pick this repo.
+services:
+  - type: web
+    name: while-we-here
+    runtime: node
+    plan: free
+    buildCommand: npm install --omit=dev
+    startCommand: npm start
+    healthCheckPath: /stats
+    envVars:
+      - key: TRUST_PROXY
+        value: "1"
+      - key: REPO_URL
+        value: https://github.com/politejackal/while-we-here
+      - key: NODE_VERSION
+        value: "22"

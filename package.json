@@ -1,0 +1,21 @@
+{
+  "name": "while-we-here",
+  "version": "1.0.0",
+  "description": "A chat room that only exists while someone is in it.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "ws": "^8.22.0"
+  },
+  "private": true,
+  "engines": {
+    "node": ">=20"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/politejackal/while-we-here.git"
+  }
+}
