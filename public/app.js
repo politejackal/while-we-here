@@ -267,6 +267,7 @@
     setBusy(btn, true);
     try {
       await ensureKeyPair();
+      if (!(await wakeRelay())) throw 'network';
       S.ws = await connect();
       for (let attempt = 0; ; attempt++) {
         S.code = generateCode();
@@ -299,6 +300,7 @@
       const derived = await deriveFromCode(code);
       Object.assign(S, derived, { code });
       S.items = [];
+      if (!(await wakeRelay())) throw 'network';
       S.ws = await connect();
       await request({ t: 'join', room: derived.roomId });
       $('code-input').value = '';
@@ -553,7 +555,7 @@
   // ---------- UI helpers ----------
   function show(view) {
     for (const v of ['home', 'room', 'ended']) $(v).hidden = v !== view;
-    if (view === 'home') loadStats();
+    if (view === 'home') onHome();
     window.scrollTo(0, 0);
   }
 
@@ -622,23 +624,118 @@
     const a = $('repo-link'); a.href = url; a.hidden = false;
   }
 
-  async function loadStats() {
-    showRepo(CONFIG.repo);
-    try {
-      const r = await fetch(RELAY + '/stats', { cache: 'no-store', credentials: 'omit', referrerPolicy: 'no-referrer' });
-      const { vanishedToday: n, repo, maxRoomSize: max } = await r.json();
-      if (max >= 2) {
-        maxRoomSize = max;
-        $('custom-size').max = String(max);
-        if (!$('custom-size-field').classList.contains('error')) $('custom-size-support').textContent = `From 2 to ${max}, including you`;
+  // ---------- Relay wake-up ----------
+  // The free relay sleeps when nobody's using it and takes ~30 s to wake. Rather
+  // than a page that looks stuck, say what's happening and show progress.
+  const WAKE_SHOW_AFTER_MS = 1200;     // a relay that's awake answers well before this
+  const WAKE_EXPECTED_MS = 30_000;
+  const WAKE_GIVE_UP_MS = 120_000;
+  const AWAKE_FOR_MS = 5 * 60_000;     // how long one answer counts as "awake"
+  let relaySeenAt = 0;
+  let waking = null;
+  let wakeHideTimer;
+
+  async function fetchStats(timeoutMs) {
+    const r = await fetch(RELAY + '/stats', {
+      cache: 'no-store', credentials: 'omit', referrerPolicy: 'no-referrer', signal: AbortSignal.timeout(timeoutMs),
+    });
+    if (!r.ok) throw new Error(String(r.status));
+    const stats = await r.json();
+    relaySeenAt = Date.now();
+    applyStats(stats);
+    return stats;
+  }
+
+  // Resolves true once the relay answers (showing the banner if that takes a moment), false if it never does.
+  function wakeRelay() {
+    if (Date.now() - relaySeenAt < AWAKE_FOR_MS) return Promise.resolve(true);
+    if (waking) return waking;
+    const started = Date.now();
+    let ticker = null;
+    const reveal = setTimeout(() => {
+      clearTimeout(wakeHideTimer);
+      const el = $('wake');
+      el.classList.remove('done', 'failed');
+      el.hidden = false;
+      $('wake-icon').textContent = 'local_fire_department';
+      $('wake-sub').textContent = "To keep this site free, our relay sleeps when nobody's using it. Waking it up takes about 30 seconds. Nothing's broken, and you can keep reading while it starts.";
+      $('wake-retry').hidden = true;
+      paintWake(0);
+      ticker = setInterval(() => paintWake(Date.now() - started), 250);
+    }, WAKE_SHOW_AFTER_MS);
+
+    waking = (async () => {
+      let ok = false;
+      while (!ok && Date.now() - started < WAKE_GIVE_UP_MS) {
+        try { await fetchStats(25_000); ok = true; }
+        catch { await new Promise((r) => setTimeout(r, 1500)); }
       }
+      clearTimeout(reveal);
+      clearInterval(ticker);
+      waking = null;
+      if (!$('wake').hidden || !ok) (ok ? finishWake : failWake)(Date.now() - started);
+      return ok;
+    })();
+    return waking;
+  }
+
+  function paintWake(ms) {
+    // Linear up to 90% over the expected time, then creep toward 98% so it never looks frozen.
+    const pct = ms < WAKE_EXPECTED_MS
+      ? (ms / WAKE_EXPECTED_MS) * 90
+      : 90 + 8 * (1 - Math.exp(-(ms - WAKE_EXPECTED_MS) / 30_000));
+    $('wake-bar').style.transform = `scaleX(${pct / 100})`;
+    $('wake-time').textContent = `${Math.floor(ms / 1000)}s`;
+    $('wake-title').textContent =
+      ms < 8_000 ? 'Waking up the relay…'
+      : ms < 20_000 ? 'Starting the relay…'
+      : ms < 40_000 ? 'Almost there…'
+      : 'Taking a little longer than usual…';
+  }
+
+  function finishWake(ms) {
+    paintWake(ms);
+    $('wake-bar').style.transform = 'scaleX(1)';
+    $('wake').classList.add('done');
+    $('wake-icon').textContent = 'check';
+    $('wake-title').textContent = 'Ready';
+    $('wake-sub').textContent = 'The relay is awake. You can start or join a room now.';
+    wakeHideTimer = setTimeout(() => { $('wake').hidden = true; }, 2500);
+  }
+
+  function failWake() {
+    clearTimeout(wakeHideTimer);
+    const el = $('wake');
+    el.hidden = false;
+    el.classList.add('failed');
+    $('wake-icon').textContent = 'error';
+    $('wake-title').textContent = "Couldn't reach the relay";
+    $('wake-sub').textContent = 'Check your internet connection, then try again.';
+    $('wake-time').textContent = '';
+    $('wake-retry').hidden = false;
+  }
+
+  function onHome() {
+    showRepo(CONFIG.repo);
+    if (Date.now() - relaySeenAt < AWAKE_FOR_MS) fetchStats(10_000).catch(() => {});
+    else wakeRelay();
+  }
+
+  function applyStats({ vanishedToday: n, repo, maxRoomSize: max }) {
+    if (max >= 2) {
+      maxRoomSize = max;
+      $('custom-size').max = String(max);
+      if (!$('custom-size-field').classList.contains('error')) $('custom-size-support').textContent = `From 2 to ${max}, including you`;
+    }
+    if (Number.isInteger(n)) {
       $('counter-number').textContent = n.toLocaleString();
       $('counter-text').textContent = n === 1 ? 'room has existed and vanished today.' : 'rooms have existed and vanished today.';
-      showRepo(repo);
-    } catch {}
+    }
+    showRepo(repo);
   }
 
   // ---------- Wiring ----------
+  $('wake-retry').addEventListener('click', () => wakeRelay());
   $('create-btn').addEventListener('click', createRoom);
   document.querySelectorAll('input[name=size]').forEach((r) => r.addEventListener('change', syncSizePicker));
   $('custom-size').addEventListener('input', () => {
